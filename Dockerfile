@@ -26,25 +26,44 @@ COPY . .
 
 # Set environment to production
 ENV NODE_ENV production
+ENV NEXT_TELEMETRY_DISABLED 1
 
-# Build both frontend and backend
-RUN yarn build
+# Build frontend first
+RUN cd frontend && yarn build
+# Then build backend
+RUN cd backend && yarn build
 
 # Production image, copy all the files and run the app
 FROM base AS runner
 WORKDIR /app
 
 ENV NODE_ENV production
+ENV NEXT_TELEMETRY_DISABLED 1
 
-# Copy built files
+# Don't run production as root
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nextjs
+USER nextjs
+
+# Copy necessary files for backend
 COPY --from=builder /app/backend/dist ./backend/dist
-COPY --from=builder /app/frontend/.next/standalone ./frontend/.next/standalone
+COPY --from=builder /app/backend/package.json ./backend/
+COPY --from=builder /app/backend/src/data ./backend/dist/data
+
+# Copy necessary files for frontend
+COPY --from=builder /app/frontend/.next/standalone ./
 COPY --from=builder /app/frontend/.next/static ./frontend/.next/static
 COPY --from=builder /app/frontend/public ./frontend/public
-COPY --from=builder /app/backend/package.json ./backend/
 
-# Install production dependencies
+# Install production dependencies for backend
+USER root
 RUN cd backend && yarn install --production --frozen-lockfile
+USER nextjs
+
+# Set the correct permissions
+RUN chown -R nextjs:nodejs .
+
+EXPOSE 3001
 
 # Start the app
 WORKDIR /app/backend

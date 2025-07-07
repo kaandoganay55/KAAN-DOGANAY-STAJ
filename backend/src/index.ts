@@ -16,15 +16,23 @@ app.use(express.json());
 
 // Serve static files from the Next.js build
 const isDevelopment = process.env.NODE_ENV !== 'production';
-const frontendPath = path.join(__dirname, '../../frontend/.next/standalone');
-const publicPath = path.join(__dirname, '../../frontend/public');
-const staticPath = path.join(__dirname, '../../frontend/.next/static');
+const frontendPath = isDevelopment 
+  ? path.join(__dirname, '../../frontend/.next/standalone') 
+  : path.join(__dirname, '../..');
+
+const publicPath = isDevelopment
+  ? path.join(__dirname, '../../frontend/public')
+  : path.join(__dirname, '../../frontend/public');
+
+const staticPath = isDevelopment
+  ? path.join(__dirname, '../../frontend/.next/static')
+  : path.join(__dirname, '../../frontend/.next/static');
 
 // Serve static files only in production
 if (!isDevelopment) {
+  app.use(express.static(frontendPath));
   app.use('/public', express.static(publicPath));
   app.use('/_next/static', express.static(staticPath));
-  app.use('/_next/image', express.static(path.join(__dirname, '../../frontend/.next/cache/images')));
 }
 
 // API Routes
@@ -59,66 +67,43 @@ app.get('/health', (req: Request, res: Response) => {
 });
 
 // Serve Next.js pages for all other routes (only in production)
-app.get('*', (req: Request, res: Response) => {
-  if (isDevelopment) {
-    return res.json({ 
-      message: 'Development mode - Frontend should run separately on port 3000',
-      api: '/api/products',
-      health: '/health'
-    });
-  }
-
-  try {
-    // Try to serve the index.html from Next.js build
-    const fs = require('fs');
-    const indexPath = path.join(__dirname, '../../frontend/.next/standalone/frontend/server.js');
-    
-    if (fs.existsSync(indexPath)) {
-      const nextApp = require(indexPath);
-      return nextApp.getRequestHandler()(req, res);
-    } else {
-      // Fallback to static index.html
-      const staticIndexPath = path.join(__dirname, '../../frontend/out/index.html');
-      if (fs.existsSync(staticIndexPath)) {
-        return res.sendFile(staticIndexPath);
-      }
+if (!isDevelopment) {
+  const nextHandler = require(path.join(frontendPath, 'server.js')).default;
+  
+  app.get('*', (req: Request, res: Response) => {
+    try {
+      return nextHandler(req, res);
+    } catch (error) {
+      console.error('Error serving Next.js:', error);
+      res.status(500).send(`
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <title>Jewelry Store</title>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <style>
+              body { font-family: Arial, sans-serif; max-width: 600px; margin: 50px auto; padding: 20px; }
+              .card { border: 1px solid #ddd; padding: 20px; border-radius: 8px; margin: 20px 0; }
+            </style>
+          </head>
+          <body>
+            <h1>🏺 Jewelry Store</h1>
+            <div class="card">
+              <h2>Application Error</h2>
+              <p>We're experiencing some technical difficulties. Please try again in a few moments.</p>
+              <p>In the meantime, you can access:</p>
+              <ul>
+                <li><a href="/api/products">🔗 API Products</a></li>
+                <li><a href="/health">💚 Health Check</a></li>
+              </ul>
+            </div>
+          </body>
+        </html>
+      `);
     }
-  } catch (error) {
-    console.error('Error serving Next.js:', error);
-  }
-
-  // Final fallback
-  res.status(200).send(`
-    <!DOCTYPE html>
-    <html>
-      <head>
-        <title>Jewelry Store</title>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <style>
-          body { font-family: Arial, sans-serif; max-width: 600px; margin: 50px auto; padding: 20px; }
-          .card { border: 1px solid #ddd; padding: 20px; border-radius: 8px; margin: 20px 0; }
-        </style>
-      </head>
-      <body>
-        <h1>🏺 Jewelry Store API</h1>
-        <div class="card">
-          <h2>Welcome!</h2>
-          <p>The application is running successfully.</p>
-          <p><strong>Available endpoints:</strong></p>
-          <ul>
-            <li><a href="/api/products">🔗 /api/products</a> - Get all products</li>
-            <li><a href="/health">💚 /health</a> - Health check</li>
-          </ul>
-        </div>
-        <div class="card">
-          <h3>Frontend Status</h3>
-          <p>Frontend files are being prepared. If you're seeing this page, the API is working correctly.</p>
-        </div>
-      </body>
-    </html>
-  `);
-});
+  });
+}
 
 app.listen(port, () => {
   console.log(`🚀 Server is running on port ${port}`);
