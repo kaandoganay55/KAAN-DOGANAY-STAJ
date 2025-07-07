@@ -1,8 +1,7 @@
-/** @type {import('next').Config} */
+/** @type {import('next').NextConfig} */
 const nextConfig = {
-  images: {
-    domains: ['cdn.shopify.com'],
-  },
-};
+  output: 'standalone',
+  distDir: '.next'
+}
 
-module.exports = nextConfig; 
+module.exports = nextConfig 
