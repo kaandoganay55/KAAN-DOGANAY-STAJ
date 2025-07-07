@@ -8,7 +8,10 @@ export interface FilterParams {
 
 export const getProducts = async (filters?: FilterParams): Promise<Product[]> => {
   try {
-    let url = 'http://localhost:3001/api/products';
+    // Vercel'de NEXT_PUBLIC_API_URL environment variable'ını kullanır
+    // Local development için localhost kullanır
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+    let url = `${baseUrl}/api/products`;
     
     if (filters) {
       const params = new URLSearchParams();
