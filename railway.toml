@@ -5,7 +5,4 @@ builder = "nixpacks"
 startCommand = "yarn build && yarn start"
 healthcheckPath = "/health"
 healthcheckTimeout = 300
-restartPolicyType = "on_failure"
-
-[variables]
-NODE_ENV = "production" 
+restartPolicyType = "on_failure" 
