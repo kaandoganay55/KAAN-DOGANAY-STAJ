@@ -52,6 +52,40 @@
   cursor: not-allowed;
 }
 
+/* Pagination styles */
+.product-swiper .swiper-pagination {
+  position: relative !important;
+  margin-top: 20px;
+}
+
+.product-swiper .swiper-pagination-bullet {
+  width: 8px;
+  height: 8px;
+  background: #d1d5db;
+  opacity: 1;
+  margin: 0 4px;
+}
+
+.product-swiper .swiper-pagination-bullet-active {
+  background: #1f2937;
+}
+
+/* Scrollbar styles */
+.product-swiper .swiper-scrollbar {
+  position: relative !important;
+  background: #d1d5db;
+  border-radius: 10px;
+  height: 6px !important;
+  margin-top: 24px;
+  width: 100%;
+}
+
+.product-swiper .swiper-scrollbar-drag {
+  background: #6b7280;
+  border-radius: 10px;
+  height: 6px !important;
+}
+
 /* Simple slider styles */
 input[type="range"]::-webkit-slider-thumb {
   appearance: none;

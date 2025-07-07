@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState, useMemo } from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
-import { Navigation } from 'swiper/modules';
+import { Navigation, Scrollbar } from 'swiper/modules';
 import { Product } from '../types';
 import { getProducts, FilterParams } from '../services/api';
 import ProductCard from '../components/ProductCard';
@@ -11,6 +11,7 @@ import ProductFilter from '../components/ProductFilter';
 // Import Swiper styles
 import 'swiper/css';
 import 'swiper/css/navigation';
+import 'swiper/css/scrollbar';
 
 export default function Home() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -83,8 +84,9 @@ export default function Home() {
           </div>
         ) : (
           <Swiper
-            modules={[Navigation]}
+            modules={[Navigation, Scrollbar]}
             navigation
+            scrollbar={{ draggable: true }}
             spaceBetween={32}
             slidesPerView={1}
             breakpoints={{
