@@ -1,0 +1,17 @@
+{
+  "name": "jewelry-store",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "backend",
+    "frontend"
+  ],
+  "scripts": {
+    "dev": "concurrently \"yarn workspace backend dev\" \"yarn workspace frontend dev\"",
+    "build": "yarn workspace backend build && yarn workspace frontend build",
+    "start": "yarn workspace backend start"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+} 
